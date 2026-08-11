@@ -25,8 +25,10 @@ const AxiosInterceptorProvider = ({ children }) => {
             (error) => {
                 const originalRequest = error.config;
 
+                const isLoginReq = originalRequest && originalRequest.url && originalRequest.url.includes('/login');
+
                 // Do not intercept 401 errors from the login route
-                if (error.response && error.response.status === 401 && originalRequest && !originalRequest.url.includes('/login')) {
+                if (error.response && error.response.status === 401 && !isLoginReq) {
                     const errorCode = error.response.data?.code;
 
                     let errorMessage = 'Your session is no longer valid. Please login again.'; // default
@@ -41,6 +43,7 @@ const AxiosInterceptorProvider = ({ children }) => {
 
                     localStorage.removeItem('adminToken');
                     localStorage.removeItem('adminUser');
+                    toast.dismiss(); // Clear any existing toasts to avoid duplicates
                     toast.error(errorMessage, { autoClose: 5000 });
                     navigate('/login');
                 }
