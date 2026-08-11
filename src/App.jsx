@@ -23,7 +23,10 @@ const AxiosInterceptorProvider = ({ children }) => {
         const interceptor = axios.interceptors.response.use(
             (response) => response,
             (error) => {
-                if (error.response && error.response.status === 401) {
+                const originalRequest = error.config;
+
+                // Do not intercept 401 errors from the login route
+                if (error.response && error.response.status === 401 && originalRequest && !originalRequest.url.includes('/login')) {
                     const errorCode = error.response.data?.code;
 
                     let errorMessage = 'Your session is no longer valid. Please login again.'; // default
