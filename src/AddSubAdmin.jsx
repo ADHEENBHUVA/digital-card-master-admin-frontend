@@ -31,7 +31,7 @@ export default function AddSubAdmin() {
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/api/admin/sub-admins', formData, {
+            const response = await axios.post(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', formData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success('Sub Admin created successfully!');

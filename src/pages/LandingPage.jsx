@@ -7,7 +7,7 @@ const LandingPage = () => {
     const [showQR, setShowQR] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/profile')
+        fetch(import.meta.env.VITE_API_URL + '/api/profile')
             .then(res => res.json())
             .then(data => {
                 setProfile(data);
@@ -139,7 +139,7 @@ const LandingPage = () => {
                             <p className="text-sm text-slate-500 mb-6 text-center">Share this card instantly by scanning the code below</p>
 
                             <div className="p-3 bg-white border-2 border-slate-100 rounded-2xl shadow-sm mb-6">
-                                <img src={`http://localhost:5000${profile.qrCodeUrl}`} alt="QR Code" className="w-[200px] h-[200px] object-contain" />
+                                <img src={`${import.meta.env.VITE_API_URL}${profile.qrCodeUrl}`} alt="QR Code" className="w-[200px] h-[200px] object-contain" />
                             </div>
 
                             <button onClick={() => setShowQR(false)} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">

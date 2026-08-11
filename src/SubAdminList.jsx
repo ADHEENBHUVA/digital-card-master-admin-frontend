@@ -22,7 +22,7 @@ export default function SubAdminList() {
 
     const fetchSubAdmins = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/admin/sub-admins', {
+            const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             setSubAdmins(response.data);
@@ -42,7 +42,7 @@ export default function SubAdminList() {
     const handleDelete = async (id, un) => {
         if (!window.confirm(`Are you certain you want to delete ${un}?`)) return;
         try {
-            await axios.delete(`http://localhost:5000/api/admin/sub-admins/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success(`${un} deleted successfully.`);
@@ -149,12 +149,12 @@ export default function SubAdminList() {
                 socialLinks: editForm.socialLinks
             };
 
-            const response = await axios.put(`http://localhost:5000/api/admin/sub-admins/${currentEdit._id}`, payload, {
+            const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentEdit._id}`, payload, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
 
             if (editForm.newPassword) {
-                await axios.post(`http://localhost:5000/api/admin/sub-admins/${currentEdit._id}/reset-password`,
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentEdit._id}/reset-password`,
                     { newPassword: editForm.newPassword },
                     { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
                 );
@@ -179,7 +179,7 @@ export default function SubAdminList() {
 
             const img = new Image();
             img.crossOrigin = "Anonymous";
-            img.src = `http://localhost:5000${qrCodeUrl}`;
+            img.src = `${import.meta.env.VITE_API_URL}${qrCodeUrl}`;
 
             img.onload = () => {
                 doc.addImage(img, 'PNG', 55, 50, 100, 100);
@@ -196,7 +196,7 @@ export default function SubAdminList() {
 
     const handleDownloadPng = async (qrCodeUrl, username) => {
         try {
-            const response = await fetch(`http://localhost:5000${qrCodeUrl}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}${qrCodeUrl}`);
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -259,7 +259,7 @@ export default function SubAdminList() {
                                     <td className="p-5">
                                         <div className="flex items-center gap-4">
                                             {admin.profile?.photo ? (
-                                                <img src={admin.profile.photo.startsWith('http') ? admin.profile.photo : `http://localhost:5000${admin.profile.photo}`} alt={admin.fullName} className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-white dark:border-slate-800" />
+                                                <img src={admin.profile.photo.startsWith('http') ? admin.profile.photo : `${import.meta.env.VITE_API_URL}${admin.profile.photo}`} alt={admin.fullName} className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-white dark:border-slate-800" />
                                             ) : (
                                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm border-2 border-white dark:border-slate-800 flex items-center justify-center text-white font-bold text-lg tracking-wider">
                                                     {getInitials(admin.fullName)}

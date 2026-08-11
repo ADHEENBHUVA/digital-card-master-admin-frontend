@@ -25,7 +25,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/auth/profile', {
+                const response = await axios.get(import.meta.env.VITE_API_URL + '/api/auth/profile', {
                     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                 });
                 const data = response.data;
@@ -58,7 +58,7 @@ export default function Profile() {
         e.preventDefault();
         setSaving(true);
         try {
-            await axios.put('http://localhost:5000/api/auth/profile', formData, {
+            await axios.put(import.meta.env.VITE_API_URL + '/api/auth/profile', formData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success('Profile updated successfully');
@@ -82,7 +82,7 @@ export default function Profile() {
 
         setPasswordSaving(true);
         try {
-            await axios.post('http://localhost:5000/api/auth/change-password', {
+            await axios.post(import.meta.env.VITE_API_URL + '/api/auth/change-password', {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             }, {

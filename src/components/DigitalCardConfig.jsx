@@ -19,7 +19,7 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
     useEffect(() => {
         const fetchCard = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/admin/sub-admins/${adminId}/digital-card`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${adminId}/digital-card`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                 });
                 const data = response.data;
@@ -42,7 +42,7 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
 
     const getMediaUrl = (url) => {
         if (!url) return '';
-        if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
+        if (url.startsWith('/uploads')) return `${import.meta.env.VITE_API_URL}${url}`;
         return url;
     };
 
@@ -123,7 +123,7 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/admin/sub-admins/${adminId}/digital-card`, formData, {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${adminId}/digital-card`, formData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success('Digital Card updated successfully');

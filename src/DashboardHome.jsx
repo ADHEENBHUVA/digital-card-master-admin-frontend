@@ -69,7 +69,7 @@ export default function DashboardHome() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/admin/sub-admins', {
+                const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
                     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                 });
 
@@ -87,7 +87,7 @@ export default function DashboardHome() {
 
                 // Fetch Master Admin Profile to get slug for preview
                 try {
-                    const profileRes = await axios.get('http://localhost:5000/api/admin/profile', {
+                    const profileRes = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/profile', {
                         headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                     });
                     if (profileRes.data && profileRes.data.slug) {
