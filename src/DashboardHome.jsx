@@ -111,23 +111,45 @@ export default function DashboardHome() {
 
 
 
-    const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative">
-            <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-10 bg-${color}-500 group-hover:scale-150 transition-transform duration-500`}></div>
-            <div className="flex justify-between items-start relative z-10">
-                <div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">{title}</p>
-                    <h3 className="text-3xl font-black text-slate-800 dark:text-white">{loading ? '...' : value}</h3>
+    const StatCard = ({ title, value, icon: Icon, color, trend }) => {
+        const colorStyles = {
+            blue: { gradient: 'from-blue-600 to-indigo-600', text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+            emerald: { gradient: 'from-emerald-500 to-teal-600', text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+            indigo: { gradient: 'from-violet-600 to-purple-600', text: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/20' },
+            pink: { gradient: 'from-pink-500 to-rose-500', text: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/20' }
+        }[color] || { gradient: 'from-slate-600 to-slate-700', text: 'text-slate-600', bg: 'bg-slate-100' };
+
+        return (
+            <div className="relative group overflow-hidden bg-white dark:bg-slate-800/90 rounded-3xl p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg shadow-slate-200/40 dark:shadow-none border border-slate-100/80 dark:border-slate-700/50 backdrop-blur-xl">
+                {/* Background glowing blob */}
+                <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${colorStyles.gradient} rounded-full opacity-[0.08] dark:opacity-20 blur-2xl group-hover:opacity-20 dark:group-hover:opacity-40 transition-opacity duration-500`}></div>
+
+                <div className="relative z-10 flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</span>
+                        <div className="mt-1 flex items-baseline gap-2">
+                            <h3 className="text-4xl font-black text-slate-800 dark:text-white tracking-tight">{loading ? '...' : value}</h3>
+                        </div>
+                    </div>
+                    <div className={`p-3.5 rounded-2xl ${colorStyles.bg} overflow-hidden relative shadow-inner group-hover:scale-110 transition-transform duration-500 ease-out`}>
+                        <div className={`absolute inset-0 bg-gradient-to-br ${colorStyles.gradient} opacity-10`}></div>
+                        <Icon size={24} className={`relative z-10 ${colorStyles.text}`} />
+                    </div>
                 </div>
-                <div className={`p-4 rounded-2xl bg-${color}-50 dark:bg-${color}-900/20 text-${color}-600 dark:text-${color}-400 group-hover:rotate-12 transition-transform`}>
-                    <Icon size={24} />
+
+                <div className="relative z-10 mt-6 flex items-center justify-between">
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colorStyles.bg} text-[13px] font-bold ${colorStyles.text}`}>
+                        <TrendingUp size={14} strokeWidth={2.5} />
+                        <span>+{trend}%</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-400 dark:text-slate-500">vs this week</span>
                 </div>
+
+                {/* Bottom colored border accent */}
+                <div className={`absolute bottom-0 left-0 w-full h-[4px] bg-gradient-to-r ${colorStyles.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
             </div>
-            <div className={`mt-4 flex items-center gap-2 text-sm font-semibold text-${color}-500`}>
-                <TrendingUp size={16} /> <span>+{trend}% this week</span>
-            </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative pb-10">

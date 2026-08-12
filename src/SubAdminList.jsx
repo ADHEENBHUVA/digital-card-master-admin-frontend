@@ -316,7 +316,7 @@ export default function SubAdminList() {
                                     <td className="p-5 text-right align-middle">
                                         <div className="flex items-center justify-end gap-2 transition-opacity">
                                             {/* View Digital Card Button */}
-                                            <a href={`http://localhost:5175/${admin.username}`} target="_blank" rel="noreferrer" title="View Digital Card" className="flex items-center justify-center p-2.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white shadow-sm hover:scale-105 active:scale-95 transition-all">
+                                            <a href={`http://localhost:5175/${admin.slug || (admin.username ? admin.username.split('@')[0] : 'admin')}`} target="_blank" rel="noreferrer" title="View Digital Card" className="flex items-center justify-center p-2.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white shadow-sm hover:scale-105 active:scale-95 transition-all">
                                                 <Eye size={16} />
                                             </a>
                                             {/* Edit Digital Card Button */}
