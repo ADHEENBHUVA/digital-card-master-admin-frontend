@@ -95,6 +95,7 @@ export default function AddSubAdmin() {
                                         onChange={handleChange}
                                         placeholder="Set initial password..."
                                         required
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white py-3 px-4 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/40 focus:border-primary transition-all shadow-sm"
                                     />
                                 </div>
                             </div>

@@ -57,11 +57,15 @@ const AxiosInterceptorProvider = ({ children }) => {
     return children;
 };
 
+import useTheme from './hooks/useTheme';
+
 function App() {
+    const { theme } = useTheme();
+
     return (
         <Router>
             <AxiosInterceptorProvider>
-                <ToastContainer position="top-right" />
+                <ToastContainer position="top-right" theme={theme === 'dark' ? 'dark' : 'light'} />
                 <Routes>
                     <Route path="/login" element={<Login />} />
 

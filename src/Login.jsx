@@ -26,7 +26,7 @@ export default function Login() {
             localStorage.setItem('adminUser', JSON.stringify(response.data));
 
             toast.success('Login Successful');
-            navigate('/sub-admins');
+            navigate('/');
         } catch (error) {
             toast.dismiss();
             toast.error(error.response?.data?.message || 'Login Failed');
