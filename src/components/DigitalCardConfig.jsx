@@ -374,12 +374,10 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
                                 </div>
                                 <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">MANDATORY</span>
                             </div>
-                            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm opacity-80">
-                                <div>
-                                    <span className="block text-sm font-bold text-slate-800 dark:text-white">Inquiry Form Active</span>
-                                    <span className="block text-[11px] text-slate-500 mt-1">Permanently enabled on your digital card</span>
-                                </div>
-                                <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">MANDATORY</span>
+                            <div className="group md:col-span-2">
+                                <label className="block text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 group-focus-within:text-blue-500 transition-colors">Inquiry Form Link (Google Form, etc.)</label>
+                                <input type="url" name="inquiry" value={formData.contact.inquiry || ''} onChange={(e) => handleChange(e, 'contact')} placeholder="https://forms.gle/..." className="w-full bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 dark:text-white py-3 px-4 rounded-xl focus:ring-2 focus:ring-blue-500/20" />
+                                <span className="block text-[11px] text-slate-500 mt-2 ml-1">Paste a link to an external form. The Inquiry button on your digital card will redirect to this link.</span>
                             </div>
                         </div>
                     </section>
