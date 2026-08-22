@@ -13,7 +13,6 @@ export default function DashboardHome() {
     const [recentAdmins, setRecentAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [trafficData, setTrafficData] = useState([]);
-    const [slug, setSlug] = useState('');
 
     const generateActivityData = (adminsList) => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -85,17 +84,7 @@ export default function DashboardHome() {
                     totalLandingViews: lpViews
                 });
 
-                // Fetch Master Admin Profile to get slug for preview
-                try {
-                    const profileRes = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/profile', {
-                        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-                    });
-                    if (profileRes.data && profileRes.data.slug) {
-                        setSlug(profileRes.data.slug);
-                    }
-                } catch (err) {
-                    console.error("Failed to load master admin profile", err);
-                }
+
 
                 setTrafficData(generateActivityData(admins));
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Key, Trash2, Link, ExternalLink, Loader2, ShieldCheck, Mail, Download, FileText, Edit, X, Image as ImageIcon, Layout, Phone, Share2, UploadCloud, Eye, Smartphone } from 'lucide-react';
+import { Key, Trash2, Link, ExternalLink, Loader2, ShieldCheck, Mail, Download, FileText, Edit, X, Image as ImageIcon, Layout, Phone, Share2, UploadCloud, Eye, Smartphone, CreditCard, Copy, Wifi } from 'lucide-react';
 import jsPDF from 'jspdf';
 import PasswordInput from './components/PasswordInput';
 import DigitalCardConfig from './components/DigitalCardConfig';
@@ -20,6 +20,12 @@ export default function SubAdminList() {
     });
     const [updating, setUpdating] = useState(false);
 
+    // NFC State
+    const [nfcModalOpen, setNfcModalOpen] = useState(false);
+    const [currentNfcAdmin, setCurrentNfcAdmin] = useState(null);
+    const [nfcInfo, setNfcInfo] = useState(null);
+    const [nfcLoading, setNfcLoading] = useState(false);
+
     const fetchSubAdmins = async () => {
         try {
             const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
@@ -37,7 +43,85 @@ export default function SubAdminList() {
         fetchSubAdmins();
     }, []);
 
+    const openNfcModal = async (admin) => {
+        setCurrentNfcAdmin(admin);
+        setNfcModalOpen(true);
+        setNfcLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${admin._id}/nfc`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            setNfcInfo(response.data);
+        } catch (error) {
+            toast.error('Failed to load NFC data. ' + (error.response?.data?.message || ''));
+        } finally {
+            setNfcLoading(false);
+        }
+    };
 
+    const closeNfcModal = () => {
+        setNfcModalOpen(false);
+        setCurrentNfcAdmin(null);
+        setNfcInfo(null);
+    };
+
+    const handleGenerateNfc = async () => {
+        if (!currentNfcAdmin) return;
+        setNfcLoading(true);
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc/generate`, {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            toast.success('NFC Token Generated Successfully!');
+
+            // Refresh info
+            const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            setNfcInfo(infoRes.data);
+        } catch (error) {
+            toast.error('Failed to generate NFC Token.');
+        } finally {
+            setNfcLoading(false);
+        }
+    };
+
+    const handleToggleNfc = async () => {
+        if (!currentNfcAdmin) return;
+        setNfcLoading(true);
+        try {
+            const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc/toggle`, {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            toast.success(response.data.message || 'NFC Status updated.');
+
+            // Refresh info
+            const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            setNfcInfo(infoRes.data);
+        } catch (error) {
+            toast.error('Failed to toggle NFC state.');
+        } finally {
+            setNfcLoading(false);
+        }
+    };
+
+    const handleWriteNfc = async (url) => {
+        if ('NDEFReader' in window) {
+            try {
+                const ndef = new window.NDEFReader();
+                await ndef.write({
+                    records: [{ recordType: "url", data: url }]
+                });
+                toast.success("Successfully wrote URL to physical NFC Card!");
+            } catch (error) {
+                toast.error("Error writing to NFC: " + error.message);
+            }
+        } else {
+            toast.info("Web NFC is not supported on this device/browser. Please use Chrome on Android to write physically, or use a 3rd party NFC app to write the copied URL.");
+        }
+    };
 
     const handleDelete = async (id, un) => {
         if (!window.confirm(`Are you certain you want to delete ${un}?`)) return;
@@ -319,6 +403,10 @@ export default function SubAdminList() {
                                             <a href={`http://localhost:5175/${admin.slug || (admin.username ? admin.username.split('@')[0] : 'admin')}`} target="_blank" rel="noreferrer" title="View Digital Card" className="flex items-center justify-center p-2.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white shadow-sm hover:scale-105 active:scale-95 transition-all">
                                                 <Eye size={16} />
                                             </a>
+                                            {/* Manage NFC Button */}
+                                            <button onClick={() => openNfcModal(admin)} title="Manage NFC Card Properties" className="p-2.5 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-600 dark:hover:bg-purple-600 hover:text-white dark:hover:text-white shadow-sm hover:scale-105 active:scale-95 transition-all">
+                                                <CreditCard size={16} />
+                                            </button>
                                             {/* Edit Digital Card Button */}
                                             <button onClick={() => openEditModal(admin, 'card')} title="Edit Digital Card" className="p-2.5 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white shadow-sm hover:scale-105 active:scale-95 transition-all">
                                                 <Smartphone size={16} />
@@ -438,6 +526,125 @@ export default function SubAdminList() {
                     </div>
                 </div>
             )}
+
+            {/* NFC Management Modal Overview */}
+            {nfcModalOpen && currentNfcAdmin && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 border border-transparent dark:border-slate-700">
+                        <button
+                            onClick={closeNfcModal}
+                            className="absolute top-6 right-6 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-colors p-2 bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 rounded-full"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="mb-6 flex items-center gap-4">
+                            <div className="bg-purple-100 text-purple-600 p-3 rounded-2xl">
+                                <CreditCard size={28} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+                                    NFC Management
+                                </h2>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">{currentNfcAdmin.fullName} ({currentNfcAdmin.username})</p>
+                            </div>
+                        </div>
+
+                        {nfcLoading ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-slate-500">
+                                <Loader2 className="animate-spin mb-4 text-purple-500" size={32} />
+                                <p className="text-sm font-medium animate-pulse">Loading NFC Settings...</p>
+                            </div>
+                        ) : nfcInfo ? (
+                            <div className="space-y-6">
+                                <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-200 uppercase text-xs tracking-wider">NFC Status</h3>
+                                        {nfcInfo.nfcEnabled ? (
+                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${nfcInfo.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                {nfcInfo.isActive ? 'ACTIVE' : 'INACTIVE'}
+                                            </span>
+                                        ) : (
+                                            <span className="px-2 py-1 rounded-md text-xs font-bold bg-slate-200 text-slate-600">NOT ENABLED</span>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Card Number</label>
+                                            <div className="font-mono text-sm text-slate-800 dark:text-slate-200">{nfcInfo.cardNumber || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Unique Token</label>
+                                            <div className="font-mono text-sm text-slate-800 dark:text-slate-200 bg-slate-200/50 dark:bg-slate-800 p-2 rounded-lg break-all">
+                                                {nfcInfo.uniqueToken || 'N/A'}
+                                            </div>
+                                        </div>
+                                        {nfcInfo.uniqueToken && (
+                                            <div>
+                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Write to physical NFC Card URL</label>
+                                                <div className="flex items-center justify-between text-sm text-purple-600 dark:text-purple-400 font-mono mt-1 break-all bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg border border-purple-100 dark:border-purple-900/50">
+                                                    {window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                                                        ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}`
+                                                        : `${window.location.origin}/card/${nfcInfo.uniqueToken}`}
+                                                </div>
+                                                <div className="flex gap-2 mt-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            const url = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}` : `${window.location.origin}/card/${nfcInfo.uniqueToken}`;
+                                                            navigator.clipboard.writeText(url);
+                                                            toast.success("URL Copied to clipboard!");
+                                                        }}
+                                                        className="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-lg transition-colors flex justify-center items-center gap-2"
+                                                    >
+                                                        <Copy size={14} /> Copy URL
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const url = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}` : `${window.location.origin}/card/${nfcInfo.uniqueToken}`;
+                                                            handleWriteNfc(url);
+                                                        }}
+                                                        className="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-colors flex justify-center items-center gap-2"
+                                                    >
+                                                        <Wifi size={14} /> Write to NFC
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    {!nfcInfo.nfcEnabled ? (
+                                        <button
+                                            onClick={handleGenerateNfc}
+                                            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-purple-500/25 flex justify-center items-center gap-2"
+                                        >
+                                            <CreditCard size={18} /> Generate New NFC Token
+                                        </button>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={handleToggleNfc}
+                                                className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-md flex justify-center items-center gap-2 ${nfcInfo.isActive ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
+                                            >
+                                                {nfcInfo.isActive ? 'Deactivate Card' : 'Activate Card'}
+                                            </button>
+                                            <button
+                                                onClick={handleGenerateNfc}
+                                                className="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl font-bold transition-all shadow-sm border border-rose-100 flex justify-center items-center gap-2"
+                                            >
+                                                Reset Token
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
