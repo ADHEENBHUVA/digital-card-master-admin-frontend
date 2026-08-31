@@ -90,7 +90,7 @@ const LandingPage = () => {
                         {/* Row 1 - Circular Icons */}
                         <ActionCircle icon={<FaPhoneAlt size={22} />} label="Call" bgClass="bg-gradient-to-tr from-[#e53935] to-[#ff5252]" href="tel:+918347640423" />
                         <ActionCircle icon={<FaWhatsapp size={26} />} label="WhatsApp" bgClass="bg-gradient-to-tr from-[#128C7E] to-[#25D366]" href={`https://wa.me/${profile.contact.whatsapp}`} />
-                        <Action3D iconSrc="https://img.icons8.com/3d-fluency/94/mail.png" label="Email" href={`mailto:${profile.contact.email}`} />
+                        <Action3D iconSrc="https://img.icons8.com/3d-fluency/94/mail.png" label="Email" href={`https://mail.google.com/mail/?view=cm&fs=1&to=${profile.contact.email}`} target="_blank" />
 
                         {/* Row 2 */}
                         <ActionCircle icon={<FaGlobe size={24} />} label="Website" bgClass="bg-gradient-to-tr from-[#1976D2] to-[#42A5F5]" href={profile.contact.website} target="_blank" />
