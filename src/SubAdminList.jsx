@@ -183,12 +183,12 @@ export default function SubAdminList() {
         }
     };
 
-    const handleFileChange = (e, name) => {
+    const handleFileChange = async (e, name) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error("Image size must be less than 2MB");
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image size must be less than 5MB");
             return;
         }
 
@@ -200,6 +200,32 @@ export default function SubAdminList() {
             }));
         };
         reader.readAsDataURL(file);
+
+        try {
+            toast.info(`Uploading image... Please wait.`);
+            const sigRes = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/cloudinary-signature', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            
+            const { signature, timestamp, cloudName, apiKey } = sigRes.data;
+            const uploadData = new FormData();
+            uploadData.append('file', file);
+            uploadData.append('api_key', apiKey);
+            uploadData.append('timestamp', timestamp);
+            uploadData.append('signature', signature);
+            uploadData.append('folder', 'digital-card');
+
+            const uploadRes = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, uploadData);
+            
+            setEditForm(prev => ({
+                ...prev,
+                profile: { ...prev.profile, [name]: uploadRes.data.secure_url }
+            }));
+            toast.success(`Image uploaded successfully! Please save.`);
+        } catch (err) {
+            toast.error(`Failed to upload image`);
+            console.error(err);
+        }
     };
 
     const submitUpdate = async (e) => {
