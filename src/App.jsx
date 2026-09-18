@@ -4,12 +4,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { useEffect } from 'react';
 
-import Login from './Login';
-import DashboardLayout from './DashboardLayout';
-import SubAdminList from './SubAdminList';
-import AddSubAdmin from './AddSubAdmin';
-import Profile from './Profile';
-import DashboardHome from './DashboardHome';
+import React, { Suspense, lazy } from 'react';
+
+const Login = lazy(() => import('./Login'));
+const DashboardLayout = lazy(() => import('./DashboardLayout'));
+const SubAdminList = lazy(() => import('./SubAdminList'));
+const AddSubAdmin = lazy(() => import('./AddSubAdmin'));
+const Profile = lazy(() => import('./Profile'));
+const DashboardHome = lazy(() => import('./DashboardHome'));
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('adminToken');
@@ -66,17 +68,19 @@ function App() {
         <Router>
             <AxiosInterceptorProvider>
                 <ToastContainer position="top-right" theme={theme === 'dark' ? 'dark' : 'light'} />
-                <Routes>
-                    <Route path="/login" element={<Login />} />
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#f1f5f9] text-slate-500 font-medium">Loading...</div>}>
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
 
-                    <Route path="/" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
-                        <Route index element={<DashboardHome />} />
-                        <Route path="sub-admins" element={<SubAdminList />} />
-                        <Route path="add-sub-admin" element={<AddSubAdmin />} />
-                        <Route path="profile" element={<Profile />} />
-                    </Route>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                        <Route path="/" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+                            <Route index element={<DashboardHome />} />
+                            <Route path="sub-admins" element={<SubAdminList />} />
+                            <Route path="add-sub-admin" element={<AddSubAdmin />} />
+                            <Route path="profile" element={<Profile />} />
+                        </Route>
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Suspense>
             </AxiosInterceptorProvider>
         </Router>
     );
