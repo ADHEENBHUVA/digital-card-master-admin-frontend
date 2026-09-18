@@ -584,14 +584,12 @@ export default function SubAdminList() {
                                             <div>
                                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Write to physical NFC Card URL</label>
                                                 <div className="flex items-center justify-between text-sm text-purple-600 dark:text-purple-400 font-mono mt-1 break-all bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                                                    {window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                                                        ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}`
-                                                        : `${window.location.origin}/card/${nfcInfo.uniqueToken}`}
+                                                    {import.meta.env.VITE_CUSTOMER_FRONTEND_URL ? `${import.meta.env.VITE_CUSTOMER_FRONTEND_URL}/card/${nfcInfo.uniqueToken}` : `https://digital-card-customer-frontend.vercel.app/card/${nfcInfo.uniqueToken}`}
                                                 </div>
                                                 <div className="flex gap-2 mt-2">
                                                     <button
                                                         onClick={() => {
-                                                            const url = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}` : `${window.location.origin}/card/${nfcInfo.uniqueToken}`;
+                                                            const url = import.meta.env.VITE_CUSTOMER_FRONTEND_URL ? `${import.meta.env.VITE_CUSTOMER_FRONTEND_URL}/card/${nfcInfo.uniqueToken}` : `https://digital-card-customer-frontend.vercel.app/card/${nfcInfo.uniqueToken}`;
                                                             navigator.clipboard.writeText(url);
                                                             toast.success("URL Copied to clipboard!");
                                                         }}
@@ -601,7 +599,7 @@ export default function SubAdminList() {
                                                     </button>
                                                     <button
                                                         onClick={() => {
-                                                            const url = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? `http://${window.location.hostname}:5175/card/${nfcInfo.uniqueToken}` : `${window.location.origin}/card/${nfcInfo.uniqueToken}`;
+                                                            const url = import.meta.env.VITE_CUSTOMER_FRONTEND_URL ? `${import.meta.env.VITE_CUSTOMER_FRONTEND_URL}/card/${nfcInfo.uniqueToken}` : `https://digital-card-customer-frontend.vercel.app/card/${nfcInfo.uniqueToken}`;
                                                             handleWriteNfc(url);
                                                         }}
                                                         className="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-colors flex justify-center items-center gap-2"
