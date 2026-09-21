@@ -157,6 +157,26 @@ export default function SubAdminList() {
         }
     };
 
+    const handleEraseWrittenCard = async (cardId) => {
+        if (!window.confirm(`Are you sure you want to completely erase (delete) the data for card ID ${cardId}? The sub-admin will no longer have access to it.`)) return;
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/nfc-cards/${cardId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+            });
+            toast.success(`Card ${cardId} successfully erased.`);
+            
+            // Refresh info
+            if (currentNfcAdmin) {
+                const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+                setNfcInfo(infoRes.data);
+            }
+        } catch (error) {
+            toast.error('Failed to erase card.');
+        }
+    };
+
     const handleDelete = async (id, un) => {
         if (!window.confirm(`Are you certain you want to delete ${un}?`)) return;
         try {
@@ -703,6 +723,13 @@ export default function SubAdminList() {
                                                         <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1">
                                                             <Smartphone size={12} /> Taps: {c.tapCount || 0}
                                                         </div>
+                                                        <button
+                                                            onClick={() => handleEraseWrittenCard(c.cardId)}
+                                                            className="mt-1 flex items-center gap-1 text-[10px] font-bold bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white px-2 py-1 rounded transition-colors"
+                                                            title="Permanently Erase Card from Database"
+                                                        >
+                                                            <Trash2 size={10} /> ERASE CARD
+                                                        </button>
                                                     </div>
                                                 </div>
                                             ))}
