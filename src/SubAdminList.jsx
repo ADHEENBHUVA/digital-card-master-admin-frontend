@@ -648,6 +648,34 @@ export default function SubAdminList() {
                                     </div>
                                 </div>
 
+                                {nfcInfo.writtenCards && nfcInfo.writtenCards.length > 0 && (
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 mt-4 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-200 uppercase text-xs tracking-wider mb-4">Cards Written by Sub Admin</h3>
+                                        <div className="space-y-3">
+                                            {nfcInfo.writtenCards.map((c) => (
+                                                <div key={c._id} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center transition-all hover:border-purple-200 dark:hover:border-purple-900/50">
+                                                    <div>
+                                                        <div className="font-bold text-slate-800 dark:text-slate-200">{c.cardName || 'Unnamed Card'}</div>
+                                                        <div className="text-xs text-slate-500 font-mono mt-1">ID: {c.cardId}</div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                                                            c.status === 'Active' 
+                                                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' 
+                                                                : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'
+                                                        }`}>
+                                                            {c.status}
+                                                        </span>
+                                                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                                            <Smartphone size={12} /> Taps: {c.tapCount || 0}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="flex gap-3">
                                     {!nfcInfo.nfcEnabled ? (
                                         <button
