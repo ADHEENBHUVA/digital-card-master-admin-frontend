@@ -148,7 +148,17 @@ export default function SubAdminList() {
                 await ndef.write({
                     records: [{ recordType: "url", data: url }]
                 });
-                toast.success("Successfully wrote URL to physical NFC Card!");
+                
+                if (window.confirm("SECURITY: Do you want to PERMANENTLY LOCK this card so no 3rd party app can ever erase it? (This cannot be undone!)")) {
+                    try {
+                        await ndef.makeReadOnly();
+                        toast.success("Successfully wrote URL and PERMANENTLY LOCKED the NFC Card!");
+                    } catch (lockError) {
+                        toast.error("Wrote URL, but failed to lock card: " + lockError.message);
+                    }
+                } else {
+                    toast.success("Successfully wrote URL to NFC Card (Unlocked)");
+                }
             } catch (error) {
                 toast.error("Error writing to NFC: " + error.message);
             }
