@@ -67,11 +67,15 @@ export default function DashboardHome() {
     };
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
+        let isMounted = true;
+        const fetchDashboardData = async (silent = false) => {
             try {
+                if (!silent) setLoading(true);
                 const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
                     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                 });
+
+                if (!isMounted) return;
 
                 const admins = response.data;
                 const active = admins.filter(a => a.status === 'active').length;
@@ -79,26 +83,53 @@ export default function DashboardHome() {
                 const lpViews = admins.reduce((acc, curr) => acc + (curr.views?.landingPage || 0), 0);
                 const nfcCards = admins.reduce((acc, curr) => acc + (curr.nfcStats?.total || 0), 0);
 
-                setStats({
+                const newStats = {
                     totalAdmins: admins.length,
                     activeAdmins: active,
                     totalCardViews: cardViews,
                     totalLandingViews: lpViews,
                     totalNfcCards: nfcCards
+                };
+
+                setStats(prevStats => {
+                    if (JSON.stringify(prevStats) !== JSON.stringify(newStats)) {
+                        return newStats;
+                    }
+                    return prevStats;
                 });
 
+                const newTrafficData = generateActivityData(admins);
+                setTrafficData(prevTraffic => {
+                    if (JSON.stringify(prevTraffic) !== JSON.stringify(newTrafficData)) {
+                        return newTrafficData;
+                    }
+                    return prevTraffic;
+                });
 
+                const newRecent = admins.slice(0, 5);
+                setRecentAdmins(prevRecent => {
+                    if (JSON.stringify(prevRecent) !== JSON.stringify(newRecent)) {
+                        return newRecent;
+                    }
+                    return prevRecent;
+                });
 
-                setTrafficData(generateActivityData(admins));
-
-                setRecentAdmins(admins.slice(0, 5));
             } catch (error) {
                 console.error("Dashboard data error", error);
             } finally {
-                setLoading(false);
+                if (!silent && isMounted) setLoading(false);
             }
         };
+
         fetchDashboardData();
+        const interval = setInterval(() => {
+            fetchDashboardData(true);
+        }, 5000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
 

@@ -31,7 +31,13 @@ export default function SubAdminList() {
             const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
-            setSubAdmins(response.data);
+            
+            setSubAdmins(prevSubAdmins => {
+                if (JSON.stringify(prevSubAdmins) !== JSON.stringify(response.data)) {
+                    return response.data;
+                }
+                return prevSubAdmins;
+            });
         } catch (error) {
             if (!silent) toast.error('Failed to load sub admins');
         } finally {
@@ -56,7 +62,13 @@ export default function SubAdminList() {
                     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
                         headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
                     });
-                    setNfcInfo(response.data);
+                    
+                    setNfcInfo(prevNfc => {
+                        if (JSON.stringify(prevNfc) !== JSON.stringify(response.data)) {
+                            return response.data;
+                        }
+                        return prevNfc;
+                    });
                 } catch (error) {
                     // silent fail for polling
                 }
