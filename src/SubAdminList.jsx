@@ -26,22 +26,44 @@ export default function SubAdminList() {
     const [nfcInfo, setNfcInfo] = useState(null);
     const [nfcLoading, setNfcLoading] = useState(false);
 
-    const fetchSubAdmins = async () => {
+    const fetchSubAdmins = async (silent = false) => {
         try {
             const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             setSubAdmins(response.data);
         } catch (error) {
-            toast.error('Failed to load sub admins');
+            if (!silent) toast.error('Failed to load sub admins');
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchSubAdmins();
+        const interval = setInterval(() => {
+            fetchSubAdmins(true);
+        }, 5000);
+        return () => clearInterval(interval);
     }, []);
+
+    // Dedicated effect to poll NFC Info if modal is open
+    useEffect(() => {
+        let nfcInterval;
+        if (nfcModalOpen && currentNfcAdmin) {
+            nfcInterval = setInterval(async () => {
+                try {
+                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+                    });
+                    setNfcInfo(response.data);
+                } catch (error) {
+                    // silent fail for polling
+                }
+            }, 5000);
+        }
+        return () => clearInterval(nfcInterval);
+    }, [nfcModalOpen, currentNfcAdmin]);
 
     const openNfcModal = async (admin) => {
         setCurrentNfcAdmin(admin);
