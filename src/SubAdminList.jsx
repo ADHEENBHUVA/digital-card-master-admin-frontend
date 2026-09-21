@@ -398,8 +398,18 @@ export default function SubAdminList() {
                                                 <span className="flex items-center gap-1"><ShieldCheck size={12} /> LP: {admin.views?.landingPage || 0}</span>
                                                 <span className="flex items-center gap-1"><ShieldCheck size={12} /> Card: {admin.views?.digitalCard || 0}</span>
                                             </div>
+                                            
+                                            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-1">
+                                                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><CreditCard size={12} /> Written NFC Cards: {admin.nfcStats?.total || 0}</span>
+                                                {(admin.nfcStats?.total > 0) && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">Active: {admin.nfcStats?.active || 0}</span>
+                                                        <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">Disabled: {admin.nfcStats?.disabled || 0}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="mt-2 text-[10px] text-slate-400 font-medium tracking-wide">
+                                        <div className="mt-3 text-[10px] text-slate-400 font-medium tracking-wide">
                                             LAST UPDATED: {new Date(admin.updatedAt).toLocaleString()}
                                         </div>
                                     </td>

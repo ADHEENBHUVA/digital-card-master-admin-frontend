@@ -8,7 +8,8 @@ export default function DashboardHome() {
         totalAdmins: 0,
         activeAdmins: 0,
         totalCardViews: 0,
-        totalLandingViews: 0
+        totalLandingViews: 0,
+        totalNfcCards: 0
     });
     const [recentAdmins, setRecentAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -76,12 +77,14 @@ export default function DashboardHome() {
                 const active = admins.filter(a => a.status === 'active').length;
                 const cardViews = admins.reduce((acc, curr) => acc + (curr.views?.digitalCard || 0), 0);
                 const lpViews = admins.reduce((acc, curr) => acc + (curr.views?.landingPage || 0), 0);
+                const nfcCards = admins.reduce((acc, curr) => acc + (curr.nfcStats?.total || 0), 0);
 
                 setStats({
                     totalAdmins: admins.length,
                     activeAdmins: active,
                     totalCardViews: cardViews,
-                    totalLandingViews: lpViews
+                    totalLandingViews: lpViews,
+                    totalNfcCards: nfcCards
                 });
 
 
@@ -105,7 +108,8 @@ export default function DashboardHome() {
             blue: { gradient: 'from-blue-600 to-indigo-600', text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
             emerald: { gradient: 'from-emerald-500 to-teal-600', text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
             indigo: { gradient: 'from-violet-600 to-purple-600', text: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/20' },
-            pink: { gradient: 'from-pink-500 to-rose-500', text: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/20' }
+            pink: { gradient: 'from-pink-500 to-rose-500', text: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/20' },
+            purple: { gradient: 'from-purple-500 to-fuchsia-600', text: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20' }
         }[color] || { gradient: 'from-slate-600 to-slate-700', text: 'text-slate-600', bg: 'bg-slate-100' };
 
         return (
@@ -155,11 +159,12 @@ export default function DashboardHome() {
             </div>
 
             {/* Top Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <StatCard title="Total Sub Admins" value={stats.totalAdmins} icon={Users} color="blue" trend={12} />
+                <StatCard title="Total NFC Cards" value={stats.totalNfcCards} icon={Smartphone} color="purple" trend={15} />
                 <StatCard title="Active Accounts" value={stats.activeAdmins} icon={UserCheck} color="emerald" trend={8} />
-                <StatCard title="Total Card Views" value={stats.totalCardViews} icon={Smartphone} color="indigo" trend={24} />
-                <StatCard title="Landing Page Hops" value={stats.totalLandingViews} icon={Eye} color="pink" trend={18} />
+                <StatCard title="Total Card Views" value={stats.totalCardViews} icon={Eye} color="indigo" trend={24} />
+                <StatCard title="Landing Page Hops" value={stats.totalLandingViews} icon={Activity} color="pink" trend={18} />
             </div>
 
             {/* Charts Section */}
