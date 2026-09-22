@@ -20,6 +20,8 @@ export default function SubAdminList() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editModalType, setEditModalType] = useState('profile');
     const [currentEdit, setCurrentEdit] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [subAdminToDelete, setSubAdminToDelete] = useState(null);
     const [editForm, setEditForm] = useState({
         fullName: '', email: '', mobile: '', companyName: '', designation: '', newPassword: '', confirmNewPassword: '',
         contact: { phone: '', whatsapp: '', website: '', maps: '', email: '' },
@@ -127,16 +129,24 @@ export default function SubAdminList() {
         }
     };
 
-    const handleDelete = async (id, un) => {
-        if (!window.confirm(`Are you certain you want to delete ${un}?`)) return;
+    const handleDelete = (id, un) => {
+        setSubAdminToDelete({ id, un });
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!subAdminToDelete) return;
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${subAdminToDelete.id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
-            toast.success(`${un} deleted successfully.`);
+            toast.success(`${subAdminToDelete.un} deleted successfully.`);
             mutateSubAdmins();
         } catch (error) {
             toast.error('Failed to delete');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setSubAdminToDelete(null);
         }
     };
 
@@ -398,6 +408,15 @@ export default function SubAdminList() {
                                         <div className="flex flex-col text-sm text-slate-600 dark:text-slate-300 space-y-1">
                                             <span className="font-medium text-slate-800 dark:text-slate-200">{admin.profile?.companyName || 'No Company'}</span>
                                             <span className="flex items-center gap-1.5"><Mail size={14} className="text-slate-400 dark:text-slate-500" /> {admin.email || admin.username}</span>
+                                            {admin.nfcPassword && (
+                                                <div className="mt-2 flex items-center gap-2">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">NFC Pass:</span>
+                                                    <code className="text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">{admin.nfcPassword}</code>
+                                                    <button onClick={() => { navigator.clipboard.writeText(admin.nfcPassword); toast.success('NFC Password copied!'); }} title="Copy NFC Password" className="text-slate-400 hover:text-primary transition-colors">
+                                                        <Copy size={12} />
+                                                    </button>
+                                                </div>
+                                            )}
                                             <div className="mt-1 flex items-center gap-3 text-xs text-slate-500 font-medium">
                                                 <span className="flex items-center gap-1"><ShieldCheck size={12} /> LP: {admin.views?.landingPage || 0}</span>
                                                 <span className="flex items-center gap-1"><ShieldCheck size={12} /> Card: {admin.views?.digitalCard || 0}</span>
@@ -714,6 +733,42 @@ export default function SubAdminList() {
                                 </div>
                             </div>
                         ) : null}
+                    </div>
+                </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmOpen && subAdminToDelete && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-200 border border-transparent dark:border-slate-700">
+                        <button
+                            onClick={() => { setDeleteConfirmOpen(false); setSubAdminToDelete(null); }}
+                            className="absolute top-6 right-6 text-slate-400 hover:text-rose-500 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
+                                <Trash2 size={32} className="text-rose-500" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Delete Sub Admin?</h2>
+                            <p className="text-slate-500 dark:text-slate-400 mb-6">
+                                Are you certain you want to delete <span className="font-semibold text-rose-500">{subAdminToDelete.un}</span>? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => { setDeleteConfirmOpen(false); setSubAdminToDelete(null); }}
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all"
+                                >
+                                    Yes, Delete
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

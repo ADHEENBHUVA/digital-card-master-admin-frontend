@@ -133,7 +133,7 @@ export default function AddSubAdmin() {
                                     <div className="group md:col-span-2">
                                         <label className="block text-slate-600 dark:text-slate-400 text-sm font-semibold mb-2 group-focus-within:text-primary dark:group-focus-within:text-blue-400 transition-colors">Mobile No.</label>
                                         <input
-                                            type="text" name="mobile" value={formData.mobile} onChange={handleChange}
+                                            type="text" name="mobile" value={formData.mobile} onChange={handleChange} required
                                             className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white py-3 px-4 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/40 focus:border-primary transition-all shadow-sm"
                                         />
                                     </div>
