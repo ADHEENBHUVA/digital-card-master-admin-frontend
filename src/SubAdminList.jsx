@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Key, Trash2, Link, ExternalLink, Loader2, ShieldCheck, Mail, Download, FileText, Edit, X, Image as ImageIcon, Layout, Phone, Share2, UploadCloud, Eye, Smartphone, CreditCard, Copy, Wifi } from 'lucide-react';
@@ -7,8 +8,14 @@ import PasswordInput from './components/PasswordInput';
 import DigitalCardConfig from './components/DigitalCardConfig';
 
 export default function SubAdminList() {
-    const [subAdmins, setSubAdmins] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const fetcher = url => axios.get(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => res.data);
+
+    const { data: subAdmins = [], error: subAdminsError, mutate: mutateSubAdmins } = useSWR(
+        import.meta.env.VITE_API_URL + '/api/admin/sub-admins',
+        fetcher,
+        { refreshInterval: 5000 }
+    );
+    const loading = !subAdmins.length && !subAdminsError;
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editModalType, setEditModalType] = useState('profile');
@@ -23,80 +30,22 @@ export default function SubAdminList() {
     // NFC State
     const [nfcModalOpen, setNfcModalOpen] = useState(false);
     const [currentNfcAdmin, setCurrentNfcAdmin] = useState(null);
-    const [nfcInfo, setNfcInfo] = useState(null);
-    const [nfcLoading, setNfcLoading] = useState(false);
-
-    const fetchSubAdmins = async (silent = false) => {
-        try {
-            const response = await axios.get(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-            });
-            
-            setSubAdmins(prevSubAdmins => {
-                if (JSON.stringify(prevSubAdmins) !== JSON.stringify(response.data)) {
-                    return response.data;
-                }
-                return prevSubAdmins;
-            });
-        } catch (error) {
-            if (!silent) toast.error('Failed to load sub admins');
-        } finally {
-            if (!silent) setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchSubAdmins();
-        const interval = setInterval(() => {
-            fetchSubAdmins(true);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Dedicated effect to poll NFC Info if modal is open
-    useEffect(() => {
-        let nfcInterval;
-        if (nfcModalOpen && currentNfcAdmin) {
-            nfcInterval = setInterval(async () => {
-                try {
-                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
-                        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-                    });
-                    
-                    setNfcInfo(prevNfc => {
-                        if (JSON.stringify(prevNfc) !== JSON.stringify(response.data)) {
-                            return response.data;
-                        }
-                        return prevNfc;
-                    });
-                } catch (error) {
-                    // silent fail for polling
-                }
-            }, 5000);
-        }
-        return () => clearInterval(nfcInterval);
-    }, [nfcModalOpen, currentNfcAdmin]);
+    const { data: nfcInfo, mutate: mutateNfcInfo, isValidating: nfcLoading } = useSWR(
+        (nfcModalOpen && currentNfcAdmin) ? `${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc` : null,
+        fetcher,
+        { refreshInterval: 5000 }
+    );
 
-    const openNfcModal = async (admin) => {
+    const openNfcModal = (admin) => {
         setCurrentNfcAdmin(admin);
         setNfcModalOpen(true);
-        setNfcLoading(true);
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${admin._id}/nfc`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-            });
-            setNfcInfo(response.data);
-        } catch (error) {
-            toast.error('Failed to load NFC data. ' + (error.response?.data?.message || ''));
-        } finally {
-            setNfcLoading(false);
-        }
     };
 
     const closeNfcModal = () => {
         setNfcModalOpen(false);
         setCurrentNfcAdmin(null);
-        setNfcInfo(null);
     };
 
     const handleGenerateNfc = async () => {
@@ -107,12 +56,7 @@ export default function SubAdminList() {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success('NFC Token Generated Successfully!');
-
-            // Refresh info
-            const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-            });
-            setNfcInfo(infoRes.data);
+            mutateNfcInfo();
         } catch (error) {
             toast.error('Failed to generate NFC Token.');
         } finally {
@@ -128,12 +72,7 @@ export default function SubAdminList() {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success(response.data.message || 'NFC Status updated.');
-
-            // Refresh info
-            const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-            });
-            setNfcInfo(infoRes.data);
+            mutateNfcInfo();
         } catch (error) {
             toast.error('Failed to toggle NFC state.');
         } finally {
@@ -152,7 +91,11 @@ export default function SubAdminList() {
                 if (window.confirm("SECURITY: Do you want to PERMANENTLY LOCK this card so no 3rd party app can ever erase it? (This cannot be undone!)")) {
                     try {
                         await ndef.makeReadOnly();
-                        toast.success("Successfully wrote URL and PERMANENTLY LOCKED the NFC Card!");
+                        await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc/lock`, {}, {
+                            headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+                        });
+                        toast.success("Successfully wrote URL, PERMANENTLY LOCKED the NFC Card, and secured in DB!");
+                        mutateNfcInfo();
                     } catch (lockError) {
                         toast.error("Wrote URL, but failed to lock card: " + lockError.message);
                     }
@@ -177,10 +120,7 @@ export default function SubAdminList() {
             
             // Refresh info
             if (currentNfcAdmin) {
-                const infoRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${currentNfcAdmin._id}/nfc`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-                });
-                setNfcInfo(infoRes.data);
+                mutateNfcInfo();
             }
         } catch (error) {
             toast.error('Failed to erase card.');
@@ -194,7 +134,7 @@ export default function SubAdminList() {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
             toast.success(`${un} deleted successfully.`);
-            setSubAdmins(subAdmins.filter(admin => admin._id !== id));
+            mutateSubAdmins();
         } catch (error) {
             toast.error('Failed to delete');
         }

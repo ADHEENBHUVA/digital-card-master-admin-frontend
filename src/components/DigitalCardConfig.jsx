@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Loader2, Phone, Share2, Layout, Image as ImageIcon, UploadCloud, UserCircle, Globe } from 'lucide-react';
@@ -14,31 +15,31 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
         footer: { businessName: '', tagline: '', copyright: '', backgroundColor: '' },
         design: { primaryColor: '#3b82f6', backgroundColor: '#ffffff', textColor: '#1e293b' }
     });
-    const [loading, setLoading] = useState(true);
+    const [initialized, setInitialized] = useState(false);
+
+    const fetcher = url => axios.get(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => res.data);
+    const { data: cardData, error, isLoading } = useSWR(
+        adminId ? `${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${adminId}/digital-card` : null,
+        fetcher,
+        { revalidateOnFocus: false }
+    );
 
     useEffect(() => {
-        const fetchCard = async () => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${adminId}/digital-card`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-                });
-                const data = response.data;
-                setFormData({
-                    hero: { ...formData.hero, ...data.hero },
-                    mainSection: { ...formData.mainSection, ...data.mainSection },
-                    contact: { ...formData.contact, ...data.contact },
-                    socialLinks: { ...formData.socialLinks, ...data.socialLinks },
-                    footer: { ...formData.footer, ...data.footer },
-                    design: { ...formData.design, ...data.design }
-                });
-            } catch (err) {
-                toast.error('Failed to load digital card config');
-            } finally { setLoading(false); }
-        };
-        if (adminId) {
-            fetchCard();
+        if (cardData && !initialized) {
+            setFormData(prev => ({
+                hero: { ...prev.hero, ...cardData.hero },
+                mainSection: { ...prev.mainSection, ...cardData.mainSection },
+                contact: { ...prev.contact, ...cardData.contact },
+                socialLinks: { ...prev.socialLinks, ...cardData.socialLinks },
+                footer: { ...prev.footer, ...cardData.footer },
+                design: { ...prev.design, ...cardData.design }
+            }));
+            setInitialized(true);
         }
-    }, [adminId]);
+        if (error) {
+            toast.error('Failed to load digital card config');
+        }
+    }, [cardData, initialized, error]);
 
     const getMediaUrl = (url) => {
         if (!url) return '';
@@ -159,12 +160,7 @@ export default function DigitalCardConfig({ adminId, onCancel }) {
         }
     };
 
-    if (loading) return (
-        <div className="h-[70vh] flex flex-col items-center justify-center text-slate-400">
-            <Loader2 className="animate-spin mb-3 text-primary" size={32} />
-            <p className="font-semibold animate-pulse tracking-wide">Loading Configurator...</p>
-        </div>
-    );
+
 
     return (
         <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
