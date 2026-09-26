@@ -4,16 +4,22 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Users, Eye, TrendingUp, UserCheck, Activity, Smartphone } from 'lucide-react';
 
 export default function DashboardHome() {
-    const [stats, setStats] = useState({
-        totalAdmins: 0,
-        activeAdmins: 0,
-        totalCardViews: 0,
-        totalLandingViews: 0,
-        totalNfcCards: 0
+    const [stats, setStats] = useState(() => {
+        const saved = sessionStorage.getItem('ma_dashboardStats');
+        return saved ? JSON.parse(saved) : {
+            totalAdmins: 0, activeAdmins: 0, totalCardViews: 0,
+            totalLandingViews: 0, totalNfcCards: 0
+        };
     });
-    const [recentAdmins, setRecentAdmins] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [trafficData, setTrafficData] = useState([]);
+    const [recentAdmins, setRecentAdmins] = useState(() => {
+        const saved = sessionStorage.getItem('ma_recentAdmins');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('ma_dashboardStats'));
+    const [trafficData, setTrafficData] = useState(() => {
+        const saved = sessionStorage.getItem('ma_trafficData');
+        return saved ? JSON.parse(saved) : [];
+    });
 
     const generateActivityData = (adminsList) => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -93,6 +99,7 @@ export default function DashboardHome() {
 
                 setStats(prevStats => {
                     if (JSON.stringify(prevStats) !== JSON.stringify(newStats)) {
+                        sessionStorage.setItem('ma_dashboardStats', JSON.stringify(newStats));
                         return newStats;
                     }
                     return prevStats;
@@ -101,6 +108,7 @@ export default function DashboardHome() {
                 const newTrafficData = generateActivityData(admins);
                 setTrafficData(prevTraffic => {
                     if (JSON.stringify(prevTraffic) !== JSON.stringify(newTrafficData)) {
+                        sessionStorage.setItem('ma_trafficData', JSON.stringify(newTrafficData));
                         return newTrafficData;
                     }
                     return prevTraffic;
@@ -109,6 +117,7 @@ export default function DashboardHome() {
                 const newRecent = admins.slice(0, 5);
                 setRecentAdmins(prevRecent => {
                     if (JSON.stringify(prevRecent) !== JSON.stringify(newRecent)) {
+                        sessionStorage.setItem('ma_recentAdmins', JSON.stringify(newRecent));
                         return newRecent;
                     }
                     return prevRecent;
