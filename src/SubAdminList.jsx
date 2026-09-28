@@ -22,6 +22,7 @@ export default function SubAdminList() {
     const [currentEdit, setCurrentEdit] = useState(null);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [subAdminToDelete, setSubAdminToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [editForm, setEditForm] = useState({
         fullName: '', email: '', mobile: '', companyName: '', designation: '', newPassword: '', confirmNewPassword: '',
         contact: { phone: '', whatsapp: '', website: '', maps: '', email: '' },
@@ -137,6 +138,7 @@ export default function SubAdminList() {
     const confirmDelete = async () => {
         if (!subAdminToDelete) return;
         try {
+            setIsDeleting(true);
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/sub-admins/${subAdminToDelete.id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
@@ -145,6 +147,7 @@ export default function SubAdminList() {
         } catch (error) {
             toast.error('Failed to delete');
         } finally {
+            setIsDeleting(false);
             setDeleteConfirmOpen(false);
             setSubAdminToDelete(null);
         }
@@ -757,15 +760,27 @@ export default function SubAdminList() {
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => { setDeleteConfirmOpen(false); setSubAdminToDelete(null); }}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-all"
+                                    disabled={isDeleting}
+                                    className={`flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-all ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmDelete}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all"
+                                    disabled={isDeleting}
+                                    className={`flex-1 flex justify-center items-center gap-2 py-3 px-4 rounded-xl font-bold text-white shadow-lg transition-all ${isDeleting ? 'bg-rose-400 opacity-70 cursor-not-allowed shadow-none' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30'}`}
                                 >
-                                    Yes, Delete
+                                    {isDeleting ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Deleting...
+                                        </>
+                                    ) : (
+                                        'Yes, Delete'
+                                    )}
                                 </button>
                             </div>
                         </div>
