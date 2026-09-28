@@ -6,6 +6,7 @@ import { UserPlus, AlertCircle } from 'lucide-react';
 import PasswordInput from './components/PasswordInput';
 
 export default function AddSubAdmin() {
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
         username: '',
@@ -31,6 +32,7 @@ export default function AddSubAdmin() {
         }
 
         try {
+            setIsLoading(true);
             const response = await axios.post(import.meta.env.VITE_API_URL + '/api/admin/sub-admins', formData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
             });
@@ -39,6 +41,8 @@ export default function AddSubAdmin() {
             navigate('/sub-admins');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error creating sub admin');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -146,9 +150,20 @@ export default function AddSubAdmin() {
 
                     <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all transform hover:-translate-y-0.5 active:scale-[0.98]"
+                        disabled={isLoading}
+                        className={`w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:from-primary/90 hover:to-secondary/90 shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 focus:outline-none focus:ring-4 focus:ring-primary/20 transform hover:-translate-y-0.5 active:scale-[0.98]'}`}
                     >
-                        Create Sub Admin
+                        {isLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Saving Sub Admin...
+                            </>
+                        ) : (
+                            'Create Sub Admin'
+                        )}
                     </button>
                 </form>
             </div>
